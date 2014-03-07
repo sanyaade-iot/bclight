@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>8D953E9D-2BAD-4BEE-9C42-6B065FFC2C96</string>
+	<key>IDESourceControlProjectName</key>
+	<string>bclight</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>E771D74D-D692-41B5-8257-B88D729E8655</key>
+		<string>https://github.com/bcsphere/bclight.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>platforms/ios/bclight.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>E771D74D-D692-41B5-8257-B88D729E8655</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/bcsphere/bclight.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>E771D74D-D692-41B5-8257-B88D729E8655</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E771D74D-D692-41B5-8257-B88D729E8655</string>
+			<key>IDESourceControlWCCName</key>
+			<string>bclight</string>
+		</dict>
+	</array>
+</dict>
+</plist>

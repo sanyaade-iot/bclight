@@ -88,6 +88,7 @@ var app = {
         //bind events
         $("#connect").click(app.connectDevice);
         $("#disconnect").click(app.disconnectDevice);
+        $("#slider").hide();
         var isconnect = app.device.isConnected;
         if(!isconnect){
             app.connectDevice();
