@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		
+		<title></title>
+		<link rel="stylesheet" href="css/jquery.mobile.min.css" />
+		<script src="js/jquery-1.7.1.min.js"></script>
+		<script src="js/jquery.mobile.min.js"></script>
+		<script src="cordova.js"></script>
+		<script src="js/index.js"></script>
+		
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+		<div data-role='header' data-id="PersistentHeader" data-position="fixed">
+				<h1>BC Light</h1>
+				<a id="back" href="javascript:window.history.go(-1);" data-role="button">Back</a> 
+				<a id="home" href="index.html" data-role="button">Home</a>
+				<a id="connect" href="javascript:void(0)" data-role="button" style="display:none">connect</a>  
+				<a id="disconnect" href="javascript:void(0)" data-role="button" style="display:none">disconnect</a>  
+		</div>
+        
+		<div data-role='content'>
+			<div id="user_cont">
+				<h1><div id="deviceName"></h1>	
+				<b>Device_ID: </b><div id = "deviceID"></div></br>
+				<div style="display:none"><b>Is connected: </b><div id = "isConnected"></div>
+            </div>
+					<a id="openLight" href="javascript:void(0)" onclick="app.openLight()" data-role="button" style="display:none">openLight</a>
+					<a id="closeLight" href="javascript:void(0)" onclick="app.closeLight()" data-role="button" style="display:none">closeLight</a>
+					<a id="changeColor" href="javascript:void(0)" onclick="app.changeColor()" data-role="button" style="display:none">changeColor</a>
+					<a id="stopChange" href="javascript:void(0)" onclick="app.stopChange()" data-role="button" style="display:none">stopChange</a>
+					<a id="lampBlink" href="javascript:void(0)" onclick="app.lampBlink()" data-role="button" style="display:none">lampBlink</a>
+           </div>
+            <div id = "slider" style="display:none margin-top:40px; margin-bottom:40px;"  >
+                <h4>adjusting brightness</h4>
+                <input id="defaultSlider"  type="range" min="4" max="100"  onchange="app.sliderchange()"/>
+            </div>
+            
+
+		<script>
+			$(function(){
+				app.deviceViewInit();
+			});
+		</script>
+	</body>
+</html>
