@@ -34,7 +34,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Base64;
 
-import com.samsung.android.sdk.bt.gatt.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattCharacteristic;
 
 
 @SuppressLint({ "UseSparseArrays", "SimpleDateFormat", "DefaultLocale" })
@@ -601,6 +601,11 @@ public class Tools {
 	public static String encodeBase64(byte[] value) {
 		return Base64.encodeToString(value, Base64.NO_WRAP | Base64.NO_PADDING);
 	}
+	
+	public static byte[] decodeBase64(String value){
+		byte[] result = Base64.decode(value, Base64.DEFAULT);
+		return result;
+	}
 
 	public static void addProperty(JSONObject obj, String key, Object value) {
 		try {
@@ -667,21 +672,24 @@ public class Tools {
 		return result;
 	}
 	
-	public static String[] getDataFromArray(JSONArray jsonArray,String key){
-		if(jsonArray==null || jsonArray.length()==0){
-			return null;
-		}
-		int length = jsonArray.length();
-		String[] strArray = new String[length];
-		try {
-			for(int i=0;i<length;i++){
-				strArray[i] = jsonArray.getString(i);
-			}
-		} catch (JSONException e) {
+    public static String getDataFromArray(JSONArray jsonArray, String key) {
+        if (jsonArray == null || jsonArray.length() == 0) {
+            return null;
+        }
+        int length = jsonArray.length();
+        String result = null;
+        try {
+            for (int i = 0; i < length; i++) {
+                if (key.equals(jsonArray.getString(i))) {
+                    result = jsonArray.getString(i);
+                    break;
+                }
+            }
+        } catch (JSONException e) {
 
-		}
-		return strArray;
-	}
+        }
+        return result;
+    }
 	
 
 	public static String getData(JSONArray jsonArray, int objectIndex,
@@ -840,18 +848,6 @@ public class Tools {
 		return new SimpleDateFormat(DATE_FORMATE).format(new Date());
 	}
 
-	public static byte[] parsingCodingFormat(String writeValue, String writeType) {
-		if (writeType.toLowerCase().equals("hex")) {
-			return hexStringToByte(writeValue);
-		}
-		if (writeType.toLowerCase().equals("ascii")) {
-			return ascIIStringToByte(writeValue);
-		}
-		if (writeType.toLowerCase().equals("unicode")) {
-			return writeValue.getBytes();
-		}
-		return null;
-	}
 	
 	public static final String bytesToHexString(byte[] bArray)
 	{

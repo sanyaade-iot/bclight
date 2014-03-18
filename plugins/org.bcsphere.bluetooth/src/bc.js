@@ -96,6 +96,72 @@
 	 * @event deviceconnected
 	 * @type {object}
 	 */
+	 
+	/**
+	 * Triggered when server's characteristic has been subscribe/unsubscribe.
+	 * @example document.addEventListener('onsubscribestatechange', onSubscribeStateChange, false);
+	 * function onSubscribeStateChange(arg){
+	 * 	var service = BC.bluetooth.services[arg.uniqueID];
+	 *	var character = service.characteristics[arg.characteristicIndex];
+	 *	if(character.isSubscribed){
+	 *		var data = new Uint8Array(128);
+	 *		for (var i = 0; i < 128; i++) {
+	 *			data[i] = '2';
+	 *		}
+	 *		window.setTimeout(function(){
+	 *			interval_notify_index = window.setInterval(function() {
+	 *				character.notify('raw',data,function(){alert("notify success!")},function(){alert("notify error!")});
+	 *			}, 5000); 
+	 *		},2000);
+	 *	}else{
+	 *		window.clearInterval(interval_notify_index);
+	 *		alert("stop notify success!");
+	 *	}
+	 * }
+	 * @event onsubscribestatechange
+	 * @type {object}
+	 */
+	
+	/**
+	 * Triggered when service characteristic has been read.
+	 * @example document.addEventListener('oncharacteristicread', onCharacteristicRead, false);
+	 * function onCharacteristicRead(arg){
+	 *   alert(JSON.stringify(arg));
+	 * }
+	 * @event oncharacteristicread
+	 * @type {object}
+	 */
+	
+	/**
+	 * Triggered when service characteristic has been written.
+	 * @example document.addEventListener('oncharacteristicwrite', onCharacteristicWrite, false);
+	 * function onCharacteristicWrite(arg){
+	 *   alert(JSON.stringify(arg));
+	 * }
+	 * @event oncharacteristicwrite
+	 * @type {object}
+	 */
+	 
+	/**
+	 * Triggered when service descriptor has been read.
+	 * @example document.addEventListener('ondescriptorread', onDescriptorRead, false);
+	 * function onDescriptorRead(arg){
+	 *   alert(JSON.stringify(arg));
+	 * }
+	 * @event ondescriptorread
+	 * @type {object}
+	 */
+	 
+	/**
+	 * Triggered when service descriptor has been written.
+	 * @example document.addEventListener('ondescriptorwrite', onDescriptorWrite, false);
+	 * function onDescriptorWrite(arg){
+	 *   alert(JSON.stringify(arg));
+	 * }
+	 * @event ondescriptorwrite
+	 * @type {object}
+	 */
+	
 	
 	var _ = root._;
 	if (!_ && (typeof require !== 'undefined')) _ = require('underscore');
@@ -118,10 +184,10 @@
 
 	//this function is used to bind "this" pointer in case of it changed by params pass.
 	function bind(){  
-	if (arguments.length < 2 && arguments[0] === undefined)      
-		return this;   
-	var __method = this, args = aa(arguments), object = args.shift();   
-		return function(){return __method.apply(object, args.concat(aa(arguments)));} 
+		if (arguments.length < 2 && arguments[0] === undefined)      
+			return this;   
+		var __method = this, args = aa(arguments), object = args.shift();   
+			return function(){return __method.apply(object, args.concat(aa(arguments)));} 
 	}
 	
 	if (!Function.prototype.bind){
@@ -134,13 +200,14 @@
 		return (r.test(this.S+this.join(this.S)+this.S));
 	}
 	
-	function fireBLEEvent(eventName,deviceID,serviceIndex,characteristicIndex,descriptorIndex,arg){
+	function fireBLEEvent(eventName,deviceID,serviceIndex,characteristicIndex,descriptorIndex,uniqueID,arg){
 		var event = document.createEvent('Events');
 		event.deviceID = deviceID;
 		event.serviceIndex = serviceIndex;
 		event.characteristicIndex = characteristicIndex;
 		event.descriptorIndex = descriptorIndex;
 		event.arg = arg;
+		event.uniqueID = uniqueID;
 		event.initEvent(eventName, false, false);
 		document.dispatchEvent(event);
 	}
@@ -151,6 +218,29 @@
 			BC.bluetooth.devices[arg.deviceID].isConnected = false;
 			fireBLEEvent("devicedisconnected",arg.deviceID);
 		});
+		BC.bluetooth.addListener('onsubscribe', function(arg){
+			var service = BC.bluetooth.services[arg.uniqueID];
+			service.characteristics[arg.characteristicIndex].isSubscribed = true;
+			fireBLEEvent("onsubscribestatechange",null,null,arg.characteristicIndex,null,arg.uniqueID);
+		});
+		BC.bluetooth.addListener('onunsubscribe', function(arg){
+			var service = BC.bluetooth.services[arg.uniqueID];
+			service.characteristics[arg.characteristicIndex].isSubscribed = false;
+			fireBLEEvent("onsubscribestatechange",null,null,arg.characteristicIndex,null,arg.uniqueID);
+		});
+		BC.bluetooth.addListener('oncharacteristicread', function(arg){
+			fireBLEEvent("oncharacteristicread",null,null,arg.characteristicIndex,null,arg.uniqueID);
+		});
+		BC.bluetooth.addListener('oncharacteristicwrite', function(arg){
+			var dataValue = new BC.DataValue(base64ToBuffer(arg.writeRequestValue));
+			fireBLEEvent("oncharacteristicwrite",null,null,arg.characteristicIndex,null,arg.uniqueID,dataValue);
+		});
+		BC.bluetooth.addListener('ondescriptorread', function(arg){
+			fireBLEEvent("ondescriptorread",null,null,arg.characteristicIndex,arg.descriptorIndex,arg.uniqueID);
+		});
+		BC.bluetooth.addListener('ondescriptorwrite', function(arg){
+			fireBLEEvent("ondescriptorwrite",null,null,arg.characteristicIndex,arg.descriptorIndex,arg.uniqueID);
+		});
 		document.addEventListener("bluetoothclose",function(){
 			BC.bluetooth.isopen = false;
 			fireBLEEvent("bluetoothstatechange");
@@ -159,6 +249,7 @@
 			BC.bluetooth.isopen = true;
 			fireBLEEvent("bluetoothstatechange");
 		},false);
+		
 		bluetooth.getEnvironment(function(data){
 			if(DEBUG){
 				alert(JSON.stringify(data));
@@ -186,6 +277,39 @@
         return arraybuffer.buffer;
 	}
   
+	function convertToBase64(data){
+		return window.btoa(String.fromCharCode.apply(null, data));
+	}
+  
+	function hexToBase64(value){
+		if (value.length % 2) value = "0" + value;
+		value = value.toLowerCase();
+		var data = new Uint8Array(value.length/2);
+		var pos = "0123456789abcdef";
+		for(var i = 0,j = 0; i < value.length; i += 2,j++){
+			data[j] = (pos.indexOf(value.charAt(i)) << 4) | (pos.indexOf(value.charAt(i + 1)));
+		}
+		return convertToBase64(data);
+	}
+	
+	function asciiToBase64(value){
+		var data = new Uint8Array(value.length);
+		alert(value);
+		for(var i = 0; i < value.length; i++){
+			data[i] = value.charCodeAt(i);
+		}
+		return convertToBase64(data);
+	}
+	
+	function unicodeToBase64(value){
+		var data = new Uint8Array(value.length*2);
+		var str = "";
+		for(var i = 0,j = 0; i < value.length; i++, j += 2){
+			data[j] = value.charCodeAt(i) / 256;
+			data[j+1] = value.charCodeAt(i) % 256;
+		}
+		return convertToBase64(data);
+	}
   
 	function isEmpty(s){
 		return ((s == undefined || s == null || s == "") ? true : false); 
@@ -236,10 +360,10 @@
 				navigator.bluetooth.disconnectDevice(disconnectSuccess,disconnectError,device.deviceID,APPID);
 			};
 			
-			this.writeCharacteristic = function(character,type,value){
+			this.writeCharacteristic = function(character,value){
 				var writeSuccess = character.writeSuccess.bind(character,character.writeSuccess);
 				var writeError = character.writeError.bind(character,character.writeError);
-				navigator.bluetooth.writeCharacteristic(writeSuccess,writeError,character.device.deviceID,character.upper.index,character.index,value,type);
+				navigator.bluetooth.writeCharacteristic(writeSuccess,writeError,character.device.deviceID,character.upper.index,character.index,value);
 			};
 			this.readCharacteristic = function(character){
 				var readSuccess = character.readSuccess.bind(character,character.readSuccess);
@@ -260,7 +384,7 @@
 				var getRSSIError = device.getRSSIError.bind(device,device.getRSSIError);
 				navigator.bluetooth.getRSSI(getRSSISuccess,getRSSIError,device.deviceID);
 			};
-			this.addServices = function(service,serviceObj,success,error){
+			this.addServices = function(serviceObj,success,error){
 				navigator.bluetooth.addServices(success,error,serviceObj);
 			};
 			this.removeService = function(service,success,error){
@@ -314,6 +438,11 @@
 			this.addEventListener = function(success,error,arg){
 				navigator.bluetooth.addEventListener(success,error,arg);
 			};
+			this.notify = function(characteristic,data){
+				var notifySuccess = characteristic.notifySuccess.bind(characteristic,characteristic.notifySuccess);
+				var notifyError = characteristic.notifyError.bind(characteristic,characteristic.notifyError);
+				navigator.bluetooth.notify(notifySuccess,notifyError,characteristic.upper.uniqueID,characteristic.index,data);
+			};
 			
 		}else{
 			alert(type+" is not support now.");
@@ -327,6 +456,7 @@
 	 * <p><b>Please note</b> that the application should not create Bluetooth object, BC manages the object model.
 	 * @class
 	 * @property {Array<Device>} devices - The advertising devices, this is filled after 'BC.Blueooth.StartScan' called
+	 * @property {Array<Service>} services - The services add by 'AddService' interface
 	 * @property {boolean} isopen - Bluetooth is open or not
 	 */
 	var Bluetooth = BC.Bluetooth = function(type){
@@ -362,15 +492,17 @@
 		this.getRSSI = this.bluetoothFuncs.getRSSI;
 		this.addServices =  this.bluetoothFuncs.addServices;
 		this.removeService = this.bluetoothFuncs.removeService;
+		this.notify = this.bluetoothFuncs.notify;
 		
 		this.bluetoothFuncs.initBluetooth();
-		
+
 		/**
 		 * @property {object}  defaults               - The default values for parties.
 		 */
 		var bluetooth = BC.bluetooth = this;
 		
 		this.devices = {};
+		this.services = {};
 		this.isopen = false;
 	};
 	_.extend(Bluetooth.prototype,{
@@ -502,7 +634,12 @@
 	 */
 	var AddService = BC.Bluetooth.AddService = function(service,success,error){
 		var serviceObj = serializeService(service);
-		BC.bluetooth.addServices(service,serviceObj,success,error);
+		BC.bluetooth.addServices(serviceObj,function(){
+			BC.bluetooth.services[service.uniqueID] = service;
+			success();
+		},function(){
+			error();
+		});
 	};
 	/** 
 	 * Removes a BLE service from the smart phone.
@@ -521,7 +658,12 @@
 	 * @param {function} [error] - Error callback
 	 */
 	var RemoveService = BC.Bluetooth.RemoveService = function(service,success,error){
-		BC.bluetooth.removeService(service,success,error);
+		BC.bluetooth.removeService(service,function(){
+			delete BC.bluetooth.services[service.uniqueID];
+			success();
+		},function(){
+			error();
+		});
 	};
 	/** 
 	 * Starts a scan for Bluetooth LE devices, looking for devices with given services.
@@ -1108,6 +1250,7 @@
 			
 			this.addCharacteristic = function(chara){
 				chara.upper = this;
+                chara.index = this.characteristics.length;
 				this.characteristics.push(chara);
 			};
 		},
@@ -1187,6 +1330,7 @@
 		value : null,
 		property : null,
 		type : null,
+		isSubscribed : false,
 		
 		initialize : function(){
             var dess = arguments[5];
@@ -1207,6 +1351,7 @@
             
             this.addDescriptor = function(des){
                 des.upper = this;
+                des.index = this.descriptors.length;
                 this.descriptors.push(des);
             };
         },
@@ -1258,8 +1403,8 @@
 		 * function writeSuccess(data){
 		 *	alert("write success!");
 		 * }
-		 * @param {string} type - The type of the value to write ('Hex'/'ASCII'/'unicode')
-		 * @param {string} value - The value write to this characteristic
+		 * @param {string} type - The type of the value to write ('hex'/'ascii'/'unicode'/'raw')
+		 * @param {string/Uint8Array} value - The value write to this characteristic, if the 'type' is 'raw', the value type should be Uint8Array
 		 * @param {function} successCallback - Success callback
 		 * @param {function} [errorCallback] - Error callback
 		 * @instance
@@ -1267,8 +1412,22 @@
 		write : function(type,value,success,error){
 			this.success = success;
 			this.error = error;
+			if(type.toLowerCase() == "hex"){
+				value = hexToBase64(value);
+			}else if(type.toLowerCase() == "ascii"){
+				value = asciiToBase64(value);
+			}else if(type.toLowerCase() == "unicode"){
+				value = unicodeToBase64(value);
+			}else if(type.toLowerCase() == "raw"){
+				value = convertToBase64(value);
+			}else{
+				error("Please input 'hex'/'ascii'/'unicode' type.");
+				return;
+			}
 			if(this.property.contains("write") || this.property.contains("writeWithoutResponse")){
-				BC.bluetooth.writeCharacteristic(this,type,value);
+				BC.bluetooth.writeCharacteristic(this,value);
+			}else{
+				error("This characteristic can't be written, please add 'write'/'writeWithoutResponse' in the property.");
 			}
 		},
 		writeSuccess : function(){
@@ -1330,6 +1489,43 @@
 		unsubscribeError : function(){
 			this.error(arguments);
 		},
+		
+		
+		/**
+         * Sends notify data to the subscriber.
+         * @memberof Characteristic
+         * @example device.services[3].characteristics[3].notify('raw',value,successCallback,errorCallback);
+		 * @param {string} type - The type of the value to write ('hex'/'ascii'/'unicode'/'raw')
+		 * @param {string/Uint8Array} value - The value write to this characteristic, if the 'type' is 'raw', the value type should be Uint8Array
+         * @param {function} [successCallback] - Success callback
+         * @param {function} [errorCallback] - Error callback
+         * @instance
+         */
+        notify : function(type,value,success,error){
+			if(type.toLowerCase() == "hex"){
+				value = hexToBase64(value);
+			}else if(type.toLowerCase() == "ascii"){
+				value = asciiToBase64(value);
+			}else if(type.toLowerCase() == "unicode"){
+				value = unicodeToBase64(value);
+			}else if(type.toLowerCase() == "raw"){
+				value = convertToBase64(value);
+			}else{
+				error("Please input 'hex'/'ascii'/'unicode' type.");
+				return;
+			}
+			if(this.property.contains("notify")){
+				BC.bluetooth.notify(this,value);
+			}else{
+				error("This characteristic notify data, please add 'notify' in the property.");
+			}
+        },
+        notifySuccess : function(){
+            this.success();
+        },
+        notifyError : function(){
+            this.error(arguments);
+        },
 		
 		/**
 		 * Discovers descriptors for the characteristic.
@@ -1443,15 +1639,3 @@
   });
   
 })();
-
-
-
-
-
-
-
-
-
-
-
-

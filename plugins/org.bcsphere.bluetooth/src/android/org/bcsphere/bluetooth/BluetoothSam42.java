@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
@@ -51,6 +52,7 @@ import com.samsung.android.sdk.bt.gatt.MutableBluetoothGattCharacteristic;
 import com.samsung.android.sdk.bt.gatt.MutableBluetoothGattDescriptor;
 import com.samsung.android.sdk.bt.gatt.MutableBluetoothGattService;
 
+@SuppressLint("NewApi")
 public class BluetoothSam42 implements IBluetooth {
 
     private static final String TAG = "BluetoothSam42";
@@ -428,8 +430,7 @@ public class BluetoothSam42 implements IBluetooth {
         String characteristicIndex = Tools.getData(json, Tools.CHARACTERISTIC_INDEX);
         String descriptorIndex = Tools.getData(json, Tools.DESCRIPTOR_INDEX);
         String writeValue = Tools.getData(json, Tools.WRITE_VALUE);
-        String writeType = Tools.getData(json, Tools.WRITE_TYPE);
-        String[] args = new String[] { deviceID, serviceIndex, characteristicIndex, writeType, writeValue };
+        String[] args = new String[] { deviceID, serviceIndex, characteristicIndex, writeValue };
         if (!isNullOrEmpty(args, callbackContext)) {
             return;
         }
@@ -442,7 +443,7 @@ public class BluetoothSam42 implements IBluetooth {
             Tools.sendErrorMsg(callbackContext);
             return;
         }
-        byte[] value = Tools.parsingCodingFormat(writeValue, writeType);
+        byte[] value = Tools.decodeBase64(writeValue);;
         if (mapWriteValueCallBack == null) {
             mapWriteValueCallBack = new HashMap<Object, CallbackContext>();
         }
@@ -674,14 +675,14 @@ public class BluetoothSam42 implements IBluetooth {
             String valueType, String value) {
         MutableBluetoothGattCharacteristic bluetoothGattCharacteristic = new MutableBluetoothGattCharacteristic(uuid,
                 property, permission);
-        byte[] charValue  = Tools.parsingCodingFormat(value, valueType);
+        byte[] charValue  =Tools.decodeBase64(value);;
         bluetoothGattCharacteristic.setValue(charValue);
         return bluetoothGattCharacteristic;
     }
 
     private MutableBluetoothGattDescriptor createDescriptor(UUID uuid, int permission, String valueType, String value) {
         MutableBluetoothGattDescriptor bluetoothGattDescriptor = new MutableBluetoothGattDescriptor(uuid, permission);
-        byte[] desValue = Tools.parsingCodingFormat(value, valueType);
+        byte[] desValue =Tools.decodeBase64(value);
         bluetoothGattDescriptor.setValue(desValue);
         return bluetoothGattDescriptor;
     }
@@ -830,7 +831,7 @@ public class BluetoothSam42 implements IBluetooth {
                 } else {
                     Tools.sendErrorMsg(callbackContext);
                 }
-                mapReadValueCallBack.remove(deviceID);
+                mapReadValueCallBack.remove(characteristic);
             }
         }
 
@@ -838,7 +839,6 @@ public class BluetoothSam42 implements IBluetooth {
         public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(characteristic, status);
             Log.i(TAG, "onCharacteristicWrite");
-            String deviceID = getDeviceID(characteristic.getService());
             CallbackContext callbackContext = mapWriteValueCallBack.get(characteristic);
             if (callbackContext != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -846,7 +846,7 @@ public class BluetoothSam42 implements IBluetooth {
                 } else {
                     Tools.sendErrorMsg(callbackContext);
                 }
-                mapWriteValueCallBack.remove(deviceID);
+                mapWriteValueCallBack.remove(characteristic);
             }
         }
 
@@ -920,7 +920,7 @@ public class BluetoothSam42 implements IBluetooth {
             super.onDescriptorRead(descriptor, status);
             Log.i(TAG, "onDescriptorRead");
             String deviceID = getDeviceID(descriptor.getCharacteristic().getService());
-            CallbackContext callbackContext = mapReadValueCallBack.get(deviceID);
+            CallbackContext callbackContext = mapReadValueCallBack.get(descriptor);
             if (callbackContext != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     JSONObject jsonObject = new JSONObject();
@@ -931,7 +931,7 @@ public class BluetoothSam42 implements IBluetooth {
                 } else {
                     Tools.sendErrorMsg(callbackContext);
                 }
-                mapReadValueCallBack.remove(deviceID);
+                mapReadValueCallBack.remove(descriptor);
             }
         }
 
@@ -939,7 +939,6 @@ public class BluetoothSam42 implements IBluetooth {
         public void onDescriptorWrite(BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(descriptor, status);
             Log.i(TAG, "onDescriptorWrite");
-            String deviceID = getDeviceID(descriptor.getCharacteristic().getService());
             CallbackContext writeValueCallbackContext = null;
             if (mapWriteValueCallBack != null) {
                 writeValueCallbackContext = mapWriteValueCallBack.get(descriptor);
@@ -950,7 +949,7 @@ public class BluetoothSam42 implements IBluetooth {
                 } else {
                     Tools.sendErrorMsg(writeValueCallbackContext);
                 }
-                mapWriteValueCallBack.remove(deviceID);
+                mapWriteValueCallBack.remove(descriptor);
             }
             
         }

@@ -30,9 +30,12 @@ Support platforms
 -----------------------------------
 * Android API 18+ (All devices with Bluetooth Low Energy HW)
 * Android API 17+ (Sumsung devices with Bluetooth Low Energy HW)
+* Android API 16+ (HTC devices with Bluetooth Low Energy HW, <b>Please note:</b> HTC use shared library to operate BLE device, you should add the 'com.htc.android.bluetooth.le.jar' in the build path manually to support HTC devices.)
 * IOS 6.0.1+  (iPhone4S+/iTouch5/iPad3+/iPad-mini/iPadAir)
 
+</br>[See Details](http://www.bcsphere.org/document/supportplatforms.html)
 </br></br>
+
 Backward
 -----------------------------------
 If your background is Java/C#/C/C++ or HW programming, you may feel confused when use functional programming language(such as javascript) for the first time.

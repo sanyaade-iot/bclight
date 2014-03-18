@@ -78,8 +78,8 @@ var bluetooth = {
     	cordova.exec(successFunc,errorFunc, "BCBluetooth", "readValue", [{"deviceID":deviceID,"serviceIndex":serviceIndex,"characteristicIndex":characteristicIndex,"descriptorIndex":""}]);
     },
     
-    writeCharacteristic: function(successFunc,errorFunc,deviceID,serviceIndex,characteristicIndex,writeValue,writeType){
-    	cordova.exec(successFunc,errorFunc, "BCBluetooth", "writeValue", [{"deviceID":deviceID,"serviceIndex":serviceIndex,"characteristicIndex":characteristicIndex,"descriptorIndex":"","writeValue":writeValue,"writeType":writeType}]);
+    writeCharacteristic: function(successFunc,errorFunc,deviceID,serviceIndex,characteristicIndex,writeValue){
+    	cordova.exec(successFunc,errorFunc, "BCBluetooth", "writeValue", [{"deviceID":deviceID,"serviceIndex":serviceIndex,"characteristicIndex":characteristicIndex,"descriptorIndex":"","writeValue":writeValue}]);
     },
     
     subscribe: function(successFunc,errorFunc,deviceID,serviceIndex,characteristicIndex,notifyEventName){
@@ -89,6 +89,10 @@ var bluetooth = {
     unsubscribe: function(successFunc,errorFunc,deviceID,serviceIndex,characteristicIndex,notifyEventName){
         cordova.exec(successFunc,errorFunc, "BCBluetooth", "setNotification", [{"deviceID":deviceID,"serviceIndex":serviceIndex,"characteristicIndex":characteristicIndex,"enable":"false"}]); 
     },
+	
+	notify: function(successFunc,errorFunc,uniqueID,characteristicIndex,data){
+		cordova.exec(successFunc,errorFunc, "BCBluetooth", "notify" , [{"uniqueID":uniqueID,"characteristicIndex":characteristicIndex,"data":data}]);
+	},
 
 	readDescriptor: function(successFunc,errorFunc,deviceID,serviceIndex,characteristicIndex,descriptorIndex){
     	cordova.exec(successFunc,errorFunc, "BCBluetooth", "readValue", [{"deviceID":deviceID,"serviceIndex":serviceIndex,"characteristicIndex":characteristicIndex,"descriptorIndex":descriptorIndex}]);
@@ -144,4 +148,5 @@ var bluetooth = {
 	
 };
 module.exports = bluetooth;
+
 

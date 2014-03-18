@@ -65,7 +65,7 @@ var app = {
                 }
                 $("[dbField='"+key+"']",liTplObj).html("NO");
             }else{
-                if(newDevice.advertisementData['manufacturerData'] == "<000001>"){
+                if(newDevice.advertisementData['serviceUUIDs'][1] == "0000ffb0-0000-1000-8000-00805f9b34fb"){
                     newDevice['deviceName'] = "magicLight";
                 }
                 $("[dbField='"+key+"']",liTplObj).html(newDevice[key]);
@@ -142,12 +142,12 @@ var app = {
         $("#slider").hide();
     },
     openLight:function(){
-        app.writeValue("3323CC");
+        app.writeValue("CC2333");
         $("#openLight").hide();
         $("#closeLight").show();
     },
     closeLight:function(){
-        app.writeValue("3324CC");
+        app.writeValue("CC2433");
         $("#openLight").show();
         $("#closeLight").hide();
     },
@@ -161,7 +161,7 @@ var app = {
         var blueColor=blue.toString(16);
         var greenColor=green.toString(16);
         var redColor=red.toString(16);
-        var colorStr = "aaf000"+blueColor+greenColor+redColor+"56";
+        var colorStr = "56"+redColor+greenColor+blueColor+"00f0aa";// "aaf000"+blueColor+greenColor+redColor+"56";
         var character = app.device.services[3].characteristics[0];
         character.write("hex",colorStr,[],[]);
         interval_index =  window.setTimeout(function(){
@@ -203,7 +203,7 @@ var app = {
         var blueColor = app.getString16(blue);
         var greenColor = app.getString16(green);
         var redColor = app.getString16(red);
-        var colorStr = "aaf000"+blueColor+greenColor+redColor+"56";
+        var colorStr = "56"+redColor+greenColor+blueColor+"00f0aa";
         app.writeValue(colorStr);
     },
     getMax: function (blue,green,red){
@@ -226,19 +226,19 @@ var app = {
         app.device.services[3].discoverCharacteristics([],[]);
     },
     loopBlink:function(){
-        app.writeValue("441625BB");
+        app.writeValue("BB251644");
     },
     redSlowBlink:function(){
-        app.writeValue("441626BB");
+        app.writeValue("BB261644");
     },
     greenSlowBlink:function(){
-        app.writeValue("441627BB");
+        app.writeValue("BB271644");
     },
     blueSlowBlink:function(){
-        app.writeValue("441628BB");
+        app.writeValue("BB281644");
     },
     yellowSlowBlink:function(){
-        app.writeValue("441629BB");
+        app.writeValue("BB291644");
     },
     writeValue:function(value){
         var character = app.device.services[3].characteristics[0];
